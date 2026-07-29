@@ -22,5 +22,11 @@ export class UserController {
 ```
 ---
 
+#### Terminal run
+```bash
+npm run start:dev
+```
+---
+
 #### Output
 ![](https://imgur.com/r24ecIc.png)
