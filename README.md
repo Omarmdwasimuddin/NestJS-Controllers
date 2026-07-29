@@ -16,7 +16,7 @@ import { Controller, Get } from '@nestjs/common';
 export class UserController {
     @Get()
     getUser(){
-        return 'User data fetched successfully!.';
+        return 'User data fetched successfully!';
     }
 }
 ```
