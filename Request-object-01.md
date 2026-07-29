@@ -21,7 +21,7 @@ export class CatsController {
 }
 ```
 
-> **Tip:** উপরের example-এ `request: Request` টাইপ ব্যবহার করে Express-এর typing সুবিধা নিতে চাইলে, `@types/express` package টা install করে নিতে হবে।
+> **Tip:** উপরের example-এ `request: Request` টাইপ ব্যবহার করে Express-এর typing সুবিধা নিতে চাইলে, `@types/express` package টা install করে নিতে হবে। Install command is `npm install -D @types/express`
 
 ## Request object-এ কী থাকে
 
