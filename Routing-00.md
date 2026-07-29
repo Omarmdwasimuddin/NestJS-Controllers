@@ -5,6 +5,7 @@
 nest g controller cats
 ```
 ![](https://imgur.com/iep4EBB.png)
+
 ---
 
 #### cats.controller.ts
@@ -19,4 +20,6 @@ export class CatsController {
     }
 }
 ```
+![](https://imgur.com/ow8dCRy.png)
+
 ---
