@@ -20,6 +20,7 @@ export class CatsController {
     }
 }
 ```
-![](https://imgur.com/ow8dCRy.png)
-
 ---
+
+#### Output
+![](https://imgur.com/ow8dCRy.png)
