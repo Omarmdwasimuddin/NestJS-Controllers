@@ -65,14 +65,3 @@ findAll(@Res({ passthrough: true }) res: Response) {
 ```
 
 এই approach-এ, native response object-এর সাথে interact করা যায় (যেমন নির্দিষ্ট condition অনুযায়ী cookie বা header set করা), কিন্তু বাকি কাজটা framework-কেই করতে দেওয়া হয় — অর্থাৎ response আসলে পাঠানোর কাজটা এখনো Nest নিজে সামলায়, শুধু status/header-এর মতো জিনিস manually adjust করার সুযোগ থাকে।
-
-## সংক্ষেপে
-
-| বিষয় | ব্যাখ্যা |
-|---|---|
-| Inject করার decorator | `@Res()` |
-| সুবিধা | Response object-এর উপর full control |
-| প্রধান downside | Code platform-dependent হয়ে যায় |
-| আরেকটা downside | Testing কঠিন হয়ে যায় (mocking লাগে) |
-| Compatibility ক্ষতি | Interceptors, `@HttpCode()`, `@Header()`-এর সাথে কাজ করে না |
-| সমাধান | `@Res({ passthrough: true })` — native access + Nest-এর সুবিধা দুটোই থাকে |
