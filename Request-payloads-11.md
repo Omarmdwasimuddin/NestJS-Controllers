@@ -1,35 +1,60 @@
-# NestJS Asynchronicity
+# NestJS Request Payloads
 
-## মূল ধারণা
+## কেন দরকার হয়
 
-Modern JavaScript-এর একটা বড় শক্তি হলো এর asynchronous data handling-এর উপর জোর দেওয়া। ঠিক এই কারণেই Nest `async` function-কে পুরোপুরি support করে।
+আগের example-এ যে POST route handler বানানো হয়েছিল, সেটা client থেকে কোনো parameter accept করতো না। এখন `@Body()` decorator যোগ করে সেটা ঠিক করা হবে, যাতে client-এর পাঠানো data handler-এর ভেতরে access করা যায়।
 
-নিয়ম হলো — প্রতিটা `async` function-কে অবশ্যই একটা `Promise` return করতে হয়। এর মাধ্যমে একটা **deferred value** (যেটা এখনই ready না, পরে resolve হবে) return করা যায়, আর Nest নিজে থেকেই সেটা automatically resolve করে নেয়।
+## DTO (Data Transfer Object) কী
 
-## Example ১: `async`/`await` দিয়ে
+TypeScript ব্যবহার করলে, `@Body()` ব্যবহার করার আগে একটা **DTO schema** define করে নেওয়া দরকার। DTO হলো এমন একটা object, যেটা নির্ধারণ করে দেয় — network-এর মধ্য দিয়ে data কীভাবে পাঠানো উচিত।
+
+## DTO Schema Define করার উপায়
+
+DTO schema define করার জন্য দুইটা উপায় আছে:
+
+1. **TypeScript interface** ব্যবহার করে
+2. **Class** ব্যবহার করে
+
+তবে এখানে **class ব্যবহার করাই recommended**।
+
+### কেন Class, Interface না
+
+- Class হলো JavaScript-এর ES6 standard-এর একটা অংশ। তাই compile হওয়ার পরও, compiled JavaScript-এ class real entity হিসেবে টিকে থাকে।
+- অন্যদিকে, TypeScript interface transpile হওয়ার সময় সম্পূর্ণভাবে **সরিয়ে ফেলা হয়** — মানে runtime-এ interface-এর কোনো অস্তিত্ব থাকে না, তাই Nest runtime-এ সেটা reference করতে পারে না।
+- এটা গুরুত্বপূর্ণ কারণ, Pipes-এর মতো feature গুলো কাজ করার জন্য runtime-এ variable-এর **metatype** access করতে পারা দরকার — আর সেটা শুধুমাত্র class দিয়েই সম্ভব, interface দিয়ে না।
+
+## `CreateCatDto` Class তৈরি করা
 
 ```typescript
-@Get()
-async findAll(): Promise<any[]> {
-  return [];
+export class CreateCatDto {
+  name: string;
+  age: number;
+  breed: string;
 }
 ```
 
-এই code সম্পূর্ণ valid। এখানে `findAll()` একটা `async` function, যেটা একটা `Promise<any[]>` return করছে। Nest নিজে থেকেই এই Promise resolve করে, resolved value দিয়ে response পাঠিয়ে দেয়।
+এখানে মাত্র তিনটা basic property আছে — `name`, `age`, আর `breed`।
 
-## Example ২: RxJS Observable দিয়ে
+## Controller-এ DTO ব্যবহার করা
 
-Nest এখানেই থেমে থাকে না — route handler থেকে RxJS-এর [observable stream](https://rxjs-dev.firebaseapp.com/guide/observable)ও return করা যায়। Nest ভেতরে ভেতরে সেই stream-এ নিজে থেকে **subscribe** করে নেয়, আর stream complete হওয়ার পর সবশেষে emit হওয়া value দিয়ে response resolve করে।
+এই নতুন তৈরি করা DTO এখন `CatsController`-এর ভেতরে ব্যবহার করা যায়।
 
 ```typescript
-@Get()
-findAll(): Observable<any[]> {
-  return of([]);
+@Post()
+async create(@Body() createCatDto: CreateCatDto) {
+  return 'This action adds a new cat';
 }
 ```
 
-এখানে `findAll()` একটা `Observable<any[]>` return করছে (RxJS-এর `of([])` ব্যবহার করে)। Nest এটাকেও ঠিক Promise-এর মতোই handle করে নেয়, আলাদা কোনো extra কাজ করতে হয় না।
+এখানে `@Body()` decorator পুরো request body-টাকে `createCatDto` parameter-এর মধ্যে inject করে দিচ্ছে, আর সেটার type হচ্ছে আমাদের বানানো `CreateCatDto` class।
 
-## দুইটার মধ্যে কোনটা ব্যবহার করবো
+## `ValidationPipe` নিয়ে Hint
 
-দুইটা approach-ই সম্পূর্ণ valid — `async`/`Promise` এবং RxJS `Observable`। যেটা নিজের প্রয়োজন আর project-এর style-এর সাথে বেশি মানানসই মনে হয়, সেটাই বেছে নেওয়া যায়।
+Nest-এর `ValidationPipe` এমন সব property filter করে বাদ দিতে পারে, যেগুলো method handler-এর গ্রহণ করা উচিত না। এই ক্ষেত্রে, গ্রহণযোগ্য property গুলোর একটা **whitelist** বানানো যায় — আর সেই whitelist-এ না থাকা যেকোনো property automatically resulting object থেকে সরিয়ে দেওয়া হয়।
+
+`CreateCatDto`-এর example-এ, whitelist হলো — `name`, `age`, আর `breed` property।
+
+> বিস্তারিত জানতে চাইলে NestJS docs-এর Validation অংশের **Stripping properties** section-টা দেখা যেতে পারে।
+| Class কেন ভালো | Runtime-এ টিকে থাকে, metatype access করা যায় (Pipes-এর জন্য দরকারি) |
+| Interface কেন সমস্যা করে | Transpile হওয়ার সময় সরে যায়, runtime-এ থাকে না |
+| Extra property handle করার উপায় | `ValidationPipe`-এর whitelist ফিচার দিয়ে অতিরিক্ত property strip করা |
